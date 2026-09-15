@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Build verified release APK
+    name: Build and install-test release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -46,9 +46,25 @@ jobs:
       - name: Rename APK
         run: cp app/build/outputs/apk/release/app-release.apk IllnessTracker-v1.0.1.apk
 
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install-test APK on Android emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 36
+          arch: x86_64
+          profile: pixel_7
+          script: |
+            adb install -r IllnessTracker-v1.0.1.apk
+            adb shell pm path com.example.illnesstracker
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: IllnessTracker-verified-release-apk
+          name: IllnessTracker-install-tested-apk
           path: IllnessTracker-v1.0.1.apk
           if-no-files-found: error
