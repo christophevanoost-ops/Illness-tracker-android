@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Build debug APK
+    name: Build verified release APK
     runs-on: ubuntu-latest
 
     steps:
@@ -34,12 +34,21 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Build debug APK
-        run: gradle --no-daemon assembleDebug
+      - name: Build release APK
+        run: gradle --no-daemon assembleRelease
+
+      - name: Verify APK signature and manifest
+        run: |
+          BT="$ANDROID_HOME/build-tools/35.0.0"
+          "$BT/apksigner" verify --verbose --print-certs app/build/outputs/apk/release/app-release.apk
+          "$BT/aapt" dump badging app/build/outputs/apk/release/app-release.apk
+
+      - name: Rename APK
+        run: cp app/build/outputs/apk/release/app-release.apk IllnessTracker-v1.0.1.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: IllnessTracker-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          name: IllnessTracker-verified-release-apk
+          path: IllnessTracker-v1.0.1.apk
           if-no-files-found: error
