@@ -8,6 +8,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,7 +21,7 @@ import android.webkit.WebViewClient;
 
 public class MainActivity extends Activity {
     private WebView webView;
-    private static final String CHANNEL_ID = "illness_reminders";
+    private static final String CHANNEL_ID = "illness_reminders_v2";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +43,19 @@ public class MainActivity extends Activity {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Uri soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+            AudioAttributes audioAttributes = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build();
+
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID, "Illness reminders", NotificationManager.IMPORTANCE_HIGH);
             channel.setDescription("Medication and illness tracker reminders");
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 500, 250, 500});
+            channel.setSound(soundUri, audioAttributes);
+            channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+
             getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
     }
@@ -51,7 +63,7 @@ public class MainActivity extends Activity {
     @Override
     public void onBackPressed() {
         webView.evaluateJavascript(
-                "(function(){var v=document.getElementById('trackerView'); if(v && !v.classList.contains('view-hidden')){showOverview(); return 'handled';} return 'finish';})()",
+                "(function(){var d=document.getElementById('detail'); if(d && !d.classList.contains('hidden')){showOverview(); return 'handled';} return 'finish';})()",
                 value -> {
                     if (value != null && value.contains("finish")) MainActivity.super.onBackPressed();
                 });
