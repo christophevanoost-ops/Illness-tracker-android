@@ -44,7 +44,7 @@ jobs:
           "$BT/aapt" dump badging app/build/outputs/apk/release/app-release.apk
 
       - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk IllnessTracker-v1.0.5.apk
+        run: cp app/build/outputs/apk/release/app-release.apk IllnessTracker-v1.0.6.apk
 
       - name: Enable KVM
         run: |
@@ -59,12 +59,12 @@ jobs:
           arch: x86_64
           profile: pixel_7
           script: |
-            adb install -r IllnessTracker-v1.0.5.apk
+            adb install -r IllnessTracker-v1.0.6.apk
             adb shell pm path com.example.illnesstracker
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: IllnessTracker-v1.0.5-install-tested
-          path: IllnessTracker-v1.0.5.apk
+          name: IllnessTracker-v1.0.6-install-tested
+          path: IllnessTracker-v1.0.6.apk
           if-no-files-found: error
